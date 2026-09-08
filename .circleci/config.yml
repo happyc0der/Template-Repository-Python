@@ -57,12 +57,12 @@ jobs:
             uv run coverage xml -o coverage-reports/coverage.xml
             uv run coverage html -d coverage-reports/html
 
-            - store_test_results:
-                path: test-results
+      - store_test_results:
+          path: test-results
 
-            - store_artifacts:
-                path: coverage-reports
-                destination: coverage
+      - store_artifacts:
+          path: coverage-reports
+          destination: coverage
 
 workflows:
   main:
