@@ -1,60 +1,120 @@
 version: 2.1
 
 jobs:
-  build-and-test:
+  setup:
     docker:
       - image: cimg/python:3.10
     steps:
       - checkout
-
       - run:
           name: Install uv
           command: curl -LsSf https://astral.sh/uv/install.sh | sh
-
       - restore_cache:
           keys:
             - uv-deps-v1-{{ checksum "uv.lock" }}
             - uv-deps-v1-
-
       - run:
           name: Install Dependencies
           command: uv sync --locked
-
       - save_cache:
           key: uv-deps-v1-{{ checksum "uv.lock" }}
           paths:
             - ~/.cache/uv
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
 
+  lint:
+    docker:
+      - image: cimg/python:3.10
+    steps:
+      - attach_workspace:
+          at: .
       - run:
-          name: Cleanup old coverage data
-          command: |
-            uv run coverage erase
-            rm -f .coverage*
-
+          name: Install uv
+          command: curl -LsSf https://astral.sh/uv/install.sh | sh
       - run:
           name: Run Static Analysis
           command: |
             uv run mypy src tests
             uv run ruff check .
 
+  unit-tests:
+    docker:
+      - image: cimg/python:3.10
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Install uv
+          command: curl -LsSf https://astral.sh/uv/install.sh | sh
       - run:
           name: Run Unit Tests with Coverage
           command: |
             mkdir -p test-results/unit
             COVERAGE_FILE=.coverage.unit uv run nose2 -v -s tests/unit/ --with-coverage --coverage=src --plugin=nose2.plugins.junitxml --junit-xml-path=test-results/unit/results.xml
+      - store_test_results:
+          path: test-results/unit
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .coverage.unit
+            - test-results/unit
 
+  integration-tests:
+    docker:
+      - image: cimg/python:3.10
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Install uv
+          command: curl -LsSf https://astral.sh/uv/install.sh | sh
       - run:
           name: Run Integration Tests
           command: |
             mkdir -p test-results/integration
             COVERAGE_FILE=.coverage.integration uv run nose2 -s tests/integration/ --with-coverage --plugin=nose2.plugins.junitxml --junit-xml-path=test-results/integration/results.xml
+      - store_test_results:
+          path: test-results/integration
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .coverage.integration
+            - test-results/integration
 
+  e2e-tests:
+    docker:
+      - image: cimg/python:3.10
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Install uv
+          command: curl -LsSf https://astral.sh/uv/install.sh | sh
       - run:
           name: Run End-to-End Tests
           command: |
             mkdir -p test-results/e2e
             COVERAGE_FILE=.coverage.e2e uv run nose2 -s tests/e2e/ --with-coverage --plugin=nose2.plugins.junitxml --junit-xml-path=test-results/e2e/results.xml
+      - store_test_results:
+          path: test-results/e2e
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .coverage.e2e
+            - test-results/e2e
 
+  combine-coverage:
+    docker:
+      - image: cimg/python:3.10
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Install uv
+          command: curl -LsSf https://astral.sh/uv/install.sh | sh
       - run:
           name: Combine Coverage Reports
           command: |
@@ -64,15 +124,50 @@ jobs:
             uv run coverage report --fail-under=70
             uv run coverage xml -o coverage-reports/coverage.xml
             uv run coverage html -d coverage-reports/html
-
-      - store_test_results:
-          path: test-results
-
       - store_artifacts:
           path: coverage-reports
           destination: coverage
 
+  python-matrix:
+    parameters:
+      python-version:
+        type: string
+    docker:
+      - image: cimg/python:3.10
+    steps:
+      - checkout
+      - run:
+          name: Install uv
+          command: curl -LsSf https://astral.sh/uv/install.sh | sh
+      - run:
+          name: Install Dependencies On << parameters.python-version >>
+          command: uv sync --locked --python << parameters.python-version >>
+      - run:
+          name: Run Unit Tests On << parameters.python-version >>
+          command: uv run --python << parameters.python-version >> nose2 -s tests/unit/
+
 workflows:
   main:
     jobs:
-      - build-and-test
+      - setup
+      - lint:
+          requires:
+            - setup
+      - unit-tests:
+          requires:
+            - setup
+      - integration-tests:
+          requires:
+            - setup
+      - e2e-tests:
+          requires:
+            - setup
+      - combine-coverage:
+          requires:
+            - unit-tests
+            - integration-tests
+            - e2e-tests
+      - python-matrix:
+          matrix:
+            parameters:
+              python-version: ["3.10", "3.11", "3.12"]

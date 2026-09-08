@@ -2,6 +2,9 @@
 
 A modern, OS-agnostic Python project template featuring comprehensive test coverage, continuous integration with CircleCI, and dependency management with [uv](https://github.com/astral-sh/uv). It includes ready-made configuration for static type checking, linting/formatting, and automated testing across unit, integration, and end-to-end suites.
 
+### Circle CI Status Badge
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/happyc0der/Template-Repository-Python/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/happyc0der/Template-Repository-Python/tree/main)
+
 ## Prerequisites
 
 You only need two things installed, regardless of operating system:

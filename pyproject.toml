@@ -45,7 +45,10 @@ line-ending = "lf"
 [tool.ruff.lint]
 select = ["ALL"]
 ignore = ["D100", "D101", "D102", "D103", "D104", "D107","D203", "T201", "S101", "PLR2004", "TRY003", "EM101",
-    "D212", "FIX002", "TD002", "TD003", "PT009", "PT027","COM812"]   # PT009 and PT027 is for the nose2
+    "D212", "FIX002", "TD002", "TD003", "PT","COM812"]   # PT009 and PT027 is for the nose2
+
+[tool.ruff.lint.isort]
+known-first-party = ["src"]
 
 [tool.mypy]
 python_version = "3.10"
@@ -67,9 +70,7 @@ exclude = ['.venv', 'build', 'dist']
 [tool.coverage.run]
 branch = true
 source = ["src"]
-omit = [
-    "tests/*", ".venv/*", "build/*", "dist/*", "*/test/*", "*/pre_commit_test.py"
-]
+omit = ["build/*", "dist/*", "pre_commit_test.py"]
 
 [tool.coverage.report]
 exclude_lines = [
