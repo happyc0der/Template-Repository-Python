@@ -75,7 +75,7 @@ jobs:
           name: Run Integration Tests
           command: |
             mkdir -p test-results/integration
-            COVERAGE_FILE=.coverage.integration uv run nose2 -s tests/integration/ --with-coverage --plugin=nose2.plugins.junitxml --junit-xml-path=test-results/integration/results.xml
+            COVERAGE_FILE=.coverage.integration uv run nose2 -s tests/integration/ --with-coverage --coverage=src --plugin=nose2.plugins.junitxml --junit-xml-path=test-results/integration/results.xml
       - store_test_results:
           path: test-results/integration
       - persist_to_workspace:
@@ -97,7 +97,7 @@ jobs:
           name: Run End-to-End Tests
           command: |
             mkdir -p test-results/e2e
-            COVERAGE_FILE=.coverage.e2e uv run nose2 -s tests/e2e/ --with-coverage --plugin=nose2.plugins.junitxml --junit-xml-path=test-results/e2e/results.xml
+            COVERAGE_FILE=.coverage.e2e uv run nose2 -s tests/e2e/ --with-coverage --coverage=src --plugin=nose2.plugins.junitxml --junit-xml-path=test-results/e2e/results.xml
       - store_test_results:
           path: test-results/e2e
       - persist_to_workspace:
