@@ -14,10 +14,8 @@ def main() -> None:
         sys.exit(1)
 
     print("Running tests...")
-    for module in ("calculator", "logger", "notifier"):
-        cmd = ["uv", "run", "python", "-m", "nose2", "-v", "-s", f"src/{module}/test/"]
-        if _run(cmd) != 0:
-            sys.exit(1)
+    if _run(["uv", "run", "python", "-m", "nose2", "-v", "-s", "tests/unit/"]) != 0:
+        sys.exit(1)
 
     sys.exit(0)
 

@@ -13,7 +13,7 @@ jobs:
 
       - run:
           name: Install Dependencies
-          command: uv sync 
+          command: uv sync
 
       - run:
           name: Cleanup old coverage data
@@ -31,9 +31,7 @@ jobs:
           name: Run Unit Tests with Coverage
           command: |
             mkdir -p test-results/unit
-            COVERAGE_FILE=.coverage.calculator uv run nose2 -v -s src/calculator/test/ --with-coverage --coverage=src.calculator --plugin=nose2.plugins.junitxml --junit-xml-path=test-results/unit/calculator.xml
-            COVERAGE_FILE=.coverage.logger uv run nose2 -v -s src/logger/test/ --with-coverage --coverage=src.logger --plugin=nose2.plugins.junitxml --junit-xml-path=test-results/unit/logger.xml
-            COVERAGE_FILE=.coverage.notifier uv run nose2 -v -s src/notifier/test/ --with-coverage --coverage=src.notifier --plugin=nose2.plugins.junitxml --junit-xml-path=test-results/unit/notifier.xml
+            COVERAGE_FILE=.coverage.unit uv run nose2 -v -s tests/unit/ --with-coverage --coverage=src --plugin=nose2.plugins.junitxml --junit-xml-path=test-results/unit/results.xml
 
       - run:
           name: Run Integration Tests
@@ -51,7 +49,7 @@ jobs:
           name: Combine Coverage Reports
           command: |
             mkdir -p coverage-reports
-            uv run coverage combine .coverage.calculator .coverage.logger .coverage.notifier .coverage.integration .coverage.e2e
+            uv run coverage combine .coverage.unit .coverage.integration .coverage.e2e
             cp .coverage coverage-reports/combined.coverage
             uv run coverage report --fail-under=70
             uv run coverage xml -o coverage-reports/coverage.xml

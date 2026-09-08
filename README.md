@@ -9,7 +9,7 @@ You only need two things installed, regardless of operating system:
 * [Git](https://git-scm.com/)
 * [uv](https://docs.astral.sh/uv/)
 
-You do **not** need Python installed beforehand. `uv` detects a compatible Python on your system automatically, or downloads a managed interpreter that satisfies this project's `requires-python` constraint if one isn't found — no manual Python install, no `pyenv`, no version conflicts.
+You do **not** need Python installed beforehand. `uv` detects a compatible Python on your system automatically, or downloads a managed interpreter that satisfies this project's `requires-python` constraint if one isn't found.
 
 ## Project Setup
 
@@ -32,25 +32,26 @@ You do **not** need Python installed beforehand. `uv` detects a compatible Pytho
    ```bash
    uv sync
    ```
-   This single command creates `.venv`, resolves and installs runtime and development dependencies (`mypy`, `ruff`, `nose2`, `coverage`, `pre-commit`), and editable-installs the project itself. You don't need to manually activate `.venv` — every command below is run through `uv run`, which finds it automatically.
+   This creates `.venv`, resolves and installs runtime and development dependencies (`mypy`, `ruff`, `nose2`, `coverage`, `pre-commit`), and editable-installs the project itself. Every command below runs through `uv run`, so you never need to manually activate `.venv`.
 
 ## Project Structure
 
 ```
 src/
-  calculator/   # calculator module + unit tests (src/calculator/test/)
-  logger/       # logging module + unit tests (src/logger/test/)
-  notifier/     # notifier module + unit tests (src/notifier/test/)
+  calculator/     # calculator implementation
+  logger/         # logging implementation
+  notifier/       # notifier implementation
 tests/
-  integration/  # integration tests
-  e2e/          # end-to-end tests
+  unit/           # unit tests for all three modules
+  integration/    # cross-module integration tests
+  e2e/            # end-to-end tests
 ```
+
+Source and tests are kept fully separate, following standard Python packaging conventions — no test code lives inside `src/`.
 
 ## Development Tools
 
 ### Static Analysis
-
-Run type checking and linting:
 ```bash
 uv run mypy src tests
 uv run ruff check .
@@ -63,11 +64,9 @@ uv run ruff format .
 
 ### Testing
 
-#### Running Individual Test Suites
+Run each suite:
 ```bash
-uv run nose2 -v -s src/calculator/test/
-uv run nose2 -v -s src/logger/test/
-uv run nose2 -v -s src/notifier/test/
+uv run nose2 -v -s tests/unit/
 uv run nose2 -v -s tests/integration/
 uv run nose2 -v -s tests/e2e/
 ```
@@ -79,68 +78,60 @@ uv run nose2
 
 #### Running Tests With Coverage
 
-This mirrors what CI does, split per-suite so coverage files can be combined afterward:
+This mirrors what CI does:
 ```bash
-COVERAGE_FILE=.coverage.calculator uv run nose2 -v -s src/calculator/test/ --with-coverage --coverage=src.calculator
-COVERAGE_FILE=.coverage.logger uv run nose2 -v -s src/logger/test/ --with-coverage --coverage=src.logger
-COVERAGE_FILE=.coverage.notifier uv run nose2 -v -s src/notifier/test/ --with-coverage --coverage=src.notifier
+COVERAGE_FILE=.coverage.unit uv run nose2 -v -s tests/unit/ --with-coverage --coverage=src
 COVERAGE_FILE=.coverage.integration uv run nose2 -s tests/integration/ --with-coverage
 COVERAGE_FILE=.coverage.e2e uv run nose2 -s tests/e2e/ --with-coverage
 
-uv run coverage combine .coverage.calculator .coverage.logger .coverage.notifier .coverage.integration .coverage.e2e
+uv run coverage combine .coverage.unit .coverage.integration .coverage.e2e
 uv run coverage report --fail-under=70
 uv run coverage xml -o coverage-reports/coverage.xml
 uv run coverage html -d coverage-reports/html
 ```
 
-> **Note (Windows PowerShell):** `COVERAGE_FILE=... command` syntax is bash/zsh-only. On PowerShell, set the variable first: `$env:COVERAGE_FILE=".coverage.calculator"; uv run nose2 ...`
+> **Note (Windows PowerShell):** `COVERAGE_FILE=... command` syntax is bash/zsh-only. On PowerShell: `$env:COVERAGE_FILE=".coverage.unit"; uv run nose2 ...`
 
 ### Coverage Reports
 
-After running the commands above, open `coverage-reports/html/index.html` in your browser to view the full HTML coverage report.
+Open `coverage-reports/html/index.html` in your browser after running the commands above.
 
 ## Continuous Integration
 
-This project uses CircleCI to, on every push:
-- Install dependencies with `uv sync`
-- Run static analysis (`mypy`, `ruff`)
-- Execute unit, integration, and end-to-end test suites
-- Combine and enforce a minimum coverage threshold (70%)
-- Publish test results and coverage reports as CI artifacts
+CircleCI, on every push:
+- Installs dependencies with `uv sync`
+- Runs static analysis (`mypy`, `ruff`)
+- Executes unit, integration, and end-to-end test suites
+- Combines coverage and enforces a 70% minimum threshold
+- Publishes test results and coverage reports as CI artifacts
 
 ## Contributing
 
-1. Create a new branch for your feature:
+1. Create a new branch:
    ```bash
    git checkout -b feature-name
    ```
 
-2. Install the pre-commit hooks (already included via `uv sync`, no separate `pip install` needed):
+2. Install the pre-commit hooks (already included via `uv sync`):
    ```bash
    uv run pre-commit install
    ```
 
-3. Make your changes and commit them:
+3. Make your changes and commit:
    ```bash
    git add .
    git commit -m "Your descriptive commit message"
    ```
-   The pre-commit hooks will automatically:
-   - Format your code with `ruff format`
-   - Check for linting issues with `ruff check`
-   - Verify type annotations with `mypy`
-   - Run unit tests to ensure everything still passes
+   Pre-commit hooks automatically format (`ruff format`), lint (`ruff check`), type-check (`mypy`), and run the unit test suite before allowing the commit.
 
-   If any hook fails, the commit is blocked until you fix the reported issues and re-commit.
-
-4. Push your changes and open a pull request:
+4. Push and open a pull request:
    ```bash
    git push origin feature-name
    ```
 
 ## License
 
-This project is licensed under the Apache License 2.0 — see the [LICENSE](LICENSE) file for details.
+Licensed under the Apache License 2.0 — see [LICENSE](LICENSE).
 
 ## Additional Resources
 
