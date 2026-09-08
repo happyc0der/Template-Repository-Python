@@ -1,59 +1,25 @@
-import platform
 import subprocess
 import sys
 
 
+def _run(cmd: list[str]) -> int:
+    result = subprocess.run(cmd, check=False)  # noqa: S603
+    return result.returncode
+
+
 def main() -> None:
-    # Detect operating system
-    os_name = platform.system()
-
-    # Set up environment activation and dependency installation
-    if os_name == "Windows":
-        # First install dependencies
-        install_cmd = [
-            "powershell",
-            "-Command",
-            ".venv\\Scripts\\Activate.ps1; uv pip install '.[dev]'",
-        ]
-
-        # Then run tests
-        test_cmd = [
-            "powershell",
-            "-Command",
-            ".venv\\Scripts\\Activate.ps1; "
-            "python -m nose2 -v -s src/calculator/test/; "
-            "python -m nose2 -v -s src/logger/test/; "
-            "python -m nose2 -v -s src/notifier/test/",
-        ]
-    else:  # Linux or macOS
-        # First install dependencies
-        install_cmd = [
-            "bash",
-            "-c",
-            "source .venv/bin/activate && uv pip install '.[dev]'",
-        ]
-
-        # Then run tests
-        test_cmd = [
-            "bash",
-            "-c",
-            "source .venv/bin/activate && "
-            "python -m nose2 -v -s src/calculator/test/ && "
-            "python -m nose2 -v -s src/logger/test/ && "
-            "python -m nose2 -v -s src/notifier/test/",
-        ]
-
-    # Run the installation command
     print("Installing dependencies...")
-    install_result = subprocess.run(install_cmd, shell=False, check=False)  # noqa: S603
-    if install_result.returncode != 0:
+    if _run(["uv", "sync"]) != 0:
         print("Failed to install dependencies")
-        sys.exit(install_result.returncode)
+        sys.exit(1)
 
-    # Run the test command
     print("Running tests...")
-    test_result = subprocess.run(test_cmd, shell=False, check=False)  # noqa: S603
-    sys.exit(test_result.returncode)
+    for module in ("calculator", "logger", "notifier"):
+        cmd = ["uv", "run", "python", "-m", "nose2", "-v", "-s", f"src/{module}/test/"]
+        if _run(cmd) != 0:
+            sys.exit(1)
+
+    sys.exit(0)
 
 
 if __name__ == "__main__":

@@ -1,108 +1,112 @@
-# Team-9-Technology-Template-Repository
-# Python Project Template with UV
+# Technology Template
 
-## Description
-A modern Python project template featuring comprehensive test coverage, continuous integration with CircleCI, and dependency management using UV. This template includes configurations for static type checking, code formatting, and automated testing.
+A modern, OS-agnostic Python project template featuring comprehensive test coverage, continuous integration with CircleCI, and dependency management with [uv](https://github.com/astral-sh/uv). It includes ready-made configuration for static type checking, linting/formatting, and automated testing across unit, integration, and end-to-end suites.
 
 ## Prerequisites
-* Python 3.10 or higher
-* UV for Python dependency management
+
+You only need two things installed, regardless of operating system:
+
+* [Git](https://git-scm.com/)
+* [uv](https://docs.astral.sh/uv/)
+
+You do **not** need Python installed beforehand. `uv` detects a compatible Python on your system automatically, or downloads a managed interpreter that satisfies this project's `requires-python` constraint if one isn't found — no manual Python install, no `pyenv`, no version conflicts.
 
 ## Project Setup
 
 1. Clone the repository:
-    ```bash
+   ```bash
    git clone <repository-url>
    cd <repository-name>
    ```
 
-2. Install UV:
+2. Install `uv` (macOS/Linux):
    ```bash
    curl -LsSf https://astral.sh/uv/install.sh | sh
    ```
-
-3. Create a virtual environment:
-   ```bash
-   uv venv .venv
+   On Windows (PowerShell):
+   ```powershell
+   powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
    ```
-   
-   Activate the virtual environment:
-   - On Unix/Linux/macOS:
-     ```bash
-     source .venv/bin/activate
-     ```
-   - On Windows:
-     ```bash
-     .venv\Scripts\activate
-     ```
 
-4. Install dependencies and pre-commit hooks:
-    ```bash
-    uv pip install ".[dev]"
-    pre-commit install
-    ```
+3. Install dependencies and create the virtual environment:
+   ```bash
+   uv sync
+   ```
+   This single command creates `.venv`, resolves and installs runtime and development dependencies (`mypy`, `ruff`, `nose2`, `coverage`, `pre-commit`), and editable-installs the project itself. You don't need to manually activate `.venv` — every command below is run through `uv run`, which finds it automatically.
+
+## Project Structure
+
+```
+src/
+  calculator/   # calculator module + unit tests (src/calculator/test/)
+  logger/       # logging module + unit tests (src/logger/test/)
+  notifier/     # notifier module + unit tests (src/notifier/test/)
+tests/
+  integration/  # integration tests
+  e2e/          # end-to-end tests
+```
+
 ## Development Tools
 
 ### Static Analysis
-Run type checking and code linting:
+
+Run type checking and linting:
 ```bash
-mypy src tests
-ruff check . --config pyproject.toml
+uv run mypy src tests
+uv run ruff check .
+```
+
+Auto-format code:
+```bash
+uv run ruff format .
 ```
 
 ### Testing
-The project includes unit, integration, and end-to-end tests:
 
 #### Running Individual Test Suites
 ```bash
-# Run calculator unit tests
-nose2 -v -s src/calculator/test/
-
-# Run logger unit tests
-nose2 -v -s src/logger/test/
-
-# Run notifier unit tests
-nose2 -v -s src/notifier/test/
+uv run nose2 -v -s src/calculator/test/
+uv run nose2 -v -s src/logger/test/
+uv run nose2 -v -s src/notifier/test/
+uv run nose2 -v -s tests/integration/
+uv run nose2 -v -s tests/e2e/
 ```
 
-#### Running Tests with Coverage
+Run everything at once:
 ```bash
-# Running all unit tests with coverage
-nose2 -v -s src/calculator/test/ --with-coverage --coverage=src.calculator
-
-COVERAGE_FILE=.coverage.logger nose2 -v -s src/logger/test/ --with-coverage --coverage=src.logger
-
-COVERAGE_FILE=.coverage.notifier nose2 -v -s src/notifier/test/ --with-coverage --coverage=src.notifier
-
-coverage combine .coverage .coverage.logger .coverage.notifier
-
-coverage report --fail-under=70
-coverage xml -o unit-coverage.xml
-coverage html -d unit-htmlcov
+uv run nose2
 ```
-> **Note**: The above commands work in a bash environment. You might need to adjust commands for your specific terminal.
 
-#### Other Test Types
+#### Running Tests With Coverage
+
+This mirrors what CI does, split per-suite so coverage files can be combined afterward:
 ```bash
-# Run integration tests
-nose2 -v -s tests/integration
+COVERAGE_FILE=.coverage.calculator uv run nose2 -v -s src/calculator/test/ --with-coverage --coverage=src.calculator
+COVERAGE_FILE=.coverage.logger uv run nose2 -v -s src/logger/test/ --with-coverage --coverage=src.logger
+COVERAGE_FILE=.coverage.notifier uv run nose2 -v -s src/notifier/test/ --with-coverage --coverage=src.notifier
+COVERAGE_FILE=.coverage.integration uv run nose2 -s tests/integration/ --with-coverage
+COVERAGE_FILE=.coverage.e2e uv run nose2 -s tests/e2e/ --with-coverage
 
-# Run end-to-end tests
-nose2 -v -s tests/e2e
-
-# Run all tests
-nose2
+uv run coverage combine .coverage.calculator .coverage.logger .coverage.notifier .coverage.integration .coverage.e2e
+uv run coverage report --fail-under=70
+uv run coverage xml -o coverage-reports/coverage.xml
+uv run coverage html -d coverage-reports/html
 ```
+
+> **Note (Windows PowerShell):** `COVERAGE_FILE=... command` syntax is bash/zsh-only. On PowerShell, set the variable first: `$env:COVERAGE_FILE=".coverage.calculator"; uv run nose2 ...`
 
 ### Coverage Reports
-Test coverage reports are generated in HTML format. View them by opening `htmlcov/index.html` in your browser.
+
+After running the commands above, open `coverage-reports/html/index.html` in your browser to view the full HTML coverage report.
 
 ## Continuous Integration
-This project uses CircleCI for continuous integration, which:
-- Runs static analysis (mypy and ruff)
-- Executes all test suites
-- Generates and stores test reports
-- Enforces minimum test coverage requirements
+
+This project uses CircleCI to, on every push:
+- Install dependencies with `uv sync`
+- Run static analysis (`mypy`, `ruff`)
+- Execute unit, integration, and end-to-end test suites
+- Combine and enforce a minimum coverage threshold (70%)
+- Publish test results and coverage reports as CI artifacts
 
 ## Contributing
 
@@ -111,10 +115,9 @@ This project uses CircleCI for continuous integration, which:
    git checkout -b feature-name
    ```
 
-2. Install pre-commit hooks:
+2. Install the pre-commit hooks (already included via `uv sync`, no separate `pip install` needed):
    ```bash
-   pip install pre-commit
-   pre-commit install
+   uv run pre-commit install
    ```
 
 3. Make your changes and commit them:
@@ -122,24 +125,25 @@ This project uses CircleCI for continuous integration, which:
    git add .
    git commit -m "Your descriptive commit message"
    ```
-
    The pre-commit hooks will automatically:
-   - Format your code using ruff-format
-   - Check for linting issues with ruff
-   - Verify type annotations with mypy
-   - Run unit tests to ensure all tests pass
+   - Format your code with `ruff format`
+   - Check for linting issues with `ruff check`
+   - Verify type annotations with `mypy`
+   - Run unit tests to ensure everything still passes
 
-4. Push your changes and create a pull request:
+   If any hook fails, the commit is blocked until you fix the reported issues and re-commit.
+
+4. Push your changes and open a pull request:
    ```bash
    git push origin feature-name
    ```
 
-If pre-commit identifies any issues, it will prevent the commit and display what needs to be fixed. Address the issues and try committing again.
-
 ## License
-This project is licensed under the Apache License 2.0 - see the LICENSE file for details.
+
+This project is licensed under the Apache License 2.0 — see the [LICENSE](LICENSE) file for details.
 
 ## Additional Resources
-- [UV Documentation](https://github.com/astral-sh/uv)
+
+- [uv Documentation](https://docs.astral.sh/uv/)
 - [CircleCI Documentation](https://circleci.com/docs/)
 - [nose2 Documentation](https://docs.nose2.io/en/latest/)

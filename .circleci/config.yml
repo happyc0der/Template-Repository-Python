@@ -1,8 +1,5 @@
 version: 2.1
 
-orbs:
-  python: circleci/python@2.1
-
 jobs:
   build-and-test:
     docker:
@@ -15,68 +12,57 @@ jobs:
           command: curl -LsSf https://astral.sh/uv/install.sh | sh
 
       - run:
-          name: Create and Activate Virtual Environment
-          command: |
-            uv venv .venv
-            echo 'export PATH=".venv/bin:$PATH"' >> $BASH_ENV
-            echo "export PYTHONPATH=$PWD/src" >> $BASH_ENV
-            source .venv/bin/activate
-
-      - run:
           name: Install Dependencies
-          command: |
-            uv pip install ".[dev]"
-            uv pip install mypy ruff nose2 coverage
+          command: uv sync 
 
       - run:
           name: Cleanup old coverage data
           command: |
-            coverage erase
+            uv run coverage erase
             rm -f .coverage*
 
       - run:
           name: Run Static Analysis
           command: |
-            mypy src tests
-            ruff check . --config pyproject.toml
+            uv run mypy src tests
+            uv run ruff check .
 
       - run:
           name: Run Unit Tests with Coverage
           command: |
             mkdir -p test-results/unit
-            COVERAGE_FILE=.coverage.calculator nose2 -v -s src/calculator/test/ --with-coverage --coverage=src.calculator --plugin=nose2.plugins.junitxml --junit-xml-path=test-results/unit/calculator.xml
-            COVERAGE_FILE=.coverage.logger nose2 -v -s src/logger/test/ --with-coverage --coverage=src.logger --plugin=nose2.plugins.junitxml --junit-xml-path=test-results/unit/logger.xml
-            COVERAGE_FILE=.coverage.notifier nose2 -v -s src/notifier/test/ --with-coverage --coverage=src.notifier --plugin=nose2.plugins.junitxml --junit-xml-path=test-results/unit/notifier.xml
+            COVERAGE_FILE=.coverage.calculator uv run nose2 -v -s src/calculator/test/ --with-coverage --coverage=src.calculator --plugin=nose2.plugins.junitxml --junit-xml-path=test-results/unit/calculator.xml
+            COVERAGE_FILE=.coverage.logger uv run nose2 -v -s src/logger/test/ --with-coverage --coverage=src.logger --plugin=nose2.plugins.junitxml --junit-xml-path=test-results/unit/logger.xml
+            COVERAGE_FILE=.coverage.notifier uv run nose2 -v -s src/notifier/test/ --with-coverage --coverage=src.notifier --plugin=nose2.plugins.junitxml --junit-xml-path=test-results/unit/notifier.xml
 
       - run:
           name: Run Integration Tests
           command: |
             mkdir -p test-results/integration
-            COVERAGE_FILE=.coverage.integration nose2 -s tests/integration/ --with-coverage --plugin=nose2.plugins.junitxml --junit-xml-path=test-results/integration/results.xml
+            COVERAGE_FILE=.coverage.integration uv run nose2 -s tests/integration/ --with-coverage --plugin=nose2.plugins.junitxml --junit-xml-path=test-results/integration/results.xml
 
       - run:
           name: Run End-to-End Tests
           command: |
             mkdir -p test-results/e2e
-            COVERAGE_FILE=.coverage.e2e nose2 -s tests/e2e/ --with-coverage --plugin=nose2.plugins.junitxml --junit-xml-path=test-results/e2e/results.xml
+            COVERAGE_FILE=.coverage.e2e uv run nose2 -s tests/e2e/ --with-coverage --plugin=nose2.plugins.junitxml --junit-xml-path=test-results/e2e/results.xml
 
       - run:
           name: Combine Coverage Reports
           command: |
             mkdir -p coverage-reports
-            coverage combine .coverage.calculator .coverage.logger .coverage.notifier .coverage.integration .coverage.e2e
-            # Store the combined raw coverage data file
+            uv run coverage combine .coverage.calculator .coverage.logger .coverage.notifier .coverage.integration .coverage.e2e
             cp .coverage coverage-reports/combined.coverage
-            coverage report --fail-under=70
-            coverage xml -o coverage-reports/coverage.xml
-            coverage html -d coverage-reports/html
+            uv run coverage report --fail-under=70
+            uv run coverage xml -o coverage-reports/coverage.xml
+            uv run coverage html -d coverage-reports/html
 
-      - store_test_results:
-          path: test-results
+            - store_test_results:
+                path: test-results
 
-      - store_artifacts:
-          path: coverage-reports
-          destination: coverage
+            - store_artifacts:
+                path: coverage-reports
+                destination: coverage
 
 workflows:
   main:
