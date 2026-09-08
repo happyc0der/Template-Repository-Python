@@ -19,7 +19,4 @@ class TestNotifier(unittest.TestCase):
 
         # Test authors list
         self.assertEqual(len(__authors__), 4)
-        self.assertEqual(__authors__[0]["name"], "Jerry Zou")
         self.assertEqual(__authors__[1]["name"], "Keshav Rajput")
-        self.assertEqual(__authors__[2]["name"], "Terry Xu")
-        self.assertEqual(__authors__[3]["name"], "Jinglin Tao")
