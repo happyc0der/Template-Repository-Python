@@ -70,7 +70,7 @@ exclude = ['.venv', 'build', 'dist']
 [tool.coverage.run]
 branch = true
 source = ["src"]
-omit = ["build/*", "dist/*", "pre_commit_test.py"]
+omit = ["tests/*", "build/*", "dist/*", "pre_commit_test.py"]
 
 [tool.coverage.report]
 exclude_lines = [
