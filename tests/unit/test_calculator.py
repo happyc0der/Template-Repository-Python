@@ -50,7 +50,3 @@ class TestCalculator(unittest.TestCase):
         self.assertEqual(subtract(25, 10), 15)
         self.assertEqual(multiply(5, 5), 25)
         self.assertEqual(divide(20, 4), 5)
-
-
-if __name__ == "__main__":
-    unittest.main()

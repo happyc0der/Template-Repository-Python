@@ -34,7 +34,3 @@ class TestLogger(unittest.TestCase):
             log("Direct log function")
             captured_output = mock_stdout.getvalue()
             self.assertIn("LOG: Direct log function", captured_output)
-
-
-if __name__ == "__main__":
-    unittest.main()

@@ -238,7 +238,3 @@ class TestEndToEndFlow(unittest.TestCase):
             # Assertion for notifications - result4 is below both thresholds
             self.assertNotIn("ALERT: Value 5 exceeded threshold 10", captured_output)
             self.assertNotIn("ALERT: Value 5 exceeded threshold 100", captured_output)
-
-
-if __name__ == "__main__":
-    unittest.main()

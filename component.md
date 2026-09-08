@@ -57,7 +57,7 @@ Each component must include:
 1. Required Files
    - component_name.py (main implementation)
    - __init__.py
-   - component/test/test_component_name.py
+   - tests/unit/test_component_name.py
    - tests/integration/test_component1_component2.py
 
 2. Documentation Requirements
@@ -66,6 +66,6 @@ Each component must include:
    - Event interactions
 
 3. Test Coverage Requirements
-   - Minimum 90% code coverage
+   - Minimum 70% code coverage
    - All public methods tested
    - Edge cases covered

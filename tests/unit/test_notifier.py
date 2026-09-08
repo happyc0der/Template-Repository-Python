@@ -23,7 +23,3 @@ class TestNotifier(unittest.TestCase):
         self.assertEqual(__authors__[1]["name"], "Keshav Rajput")
         self.assertEqual(__authors__[2]["name"], "Terry Xu")
         self.assertEqual(__authors__[3]["name"], "Jinglin Tao")
-
-
-if __name__ == "__main__":
-    unittest.main()

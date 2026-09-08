@@ -78,7 +78,3 @@ class TestCalculatorLogger(unittest.TestCase):
                 captured_output,
                 "Incorrect log output",
             )
-
-
-if __name__ == "__main__":
-    unittest.main()

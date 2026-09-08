@@ -30,7 +30,3 @@ class TestLoggerNotifier(unittest.TestCase):
             captured_output = mock_stdout.getvalue()
             assert "LOG: Checking if value exceeds threshold" in captured_output
             assert "ALERT: Value 15 exceeded threshold 10" in captured_output
-
-
-if __name__ == "__main__":
-    unittest.main()
