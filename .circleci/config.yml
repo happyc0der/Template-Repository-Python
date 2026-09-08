@@ -11,9 +11,19 @@ jobs:
           name: Install uv
           command: curl -LsSf https://astral.sh/uv/install.sh | sh
 
+      - restore_cache:
+          keys:
+            - uv-deps-v1-{{ checksum "uv.lock" }}
+            - uv-deps-v1-
+
       - run:
           name: Install Dependencies
-          command: uv sync
+          command: uv sync --locked
+
+      - save_cache:
+          key: uv-deps-v1-{{ checksum "uv.lock" }}
+          paths:
+            - ~/.cache/uv
 
       - run:
           name: Cleanup old coverage data
