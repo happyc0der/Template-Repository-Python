@@ -1,66 +1,32 @@
-# Pull Request Description
+Summary
+<!-- What does this PR do, in 1-3 sentences? -->
 
-## Overview
-[Provide a brief overview of what this PR accomplishes]
+Type of Change
+<!-- Delete the ones that don't apply -->
 
-## Type of Change
-- [ ] Bug fix (non-breaking change that fixes an issue)
-- [ ] New feature (non-breaking change that adds functionality)
-- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
-- [ ] Documentation update
-- [ ] Refactoring (no functional changes)
-- [ ] Performance improvements
-- [ ] Test updates
+Bug fix
 
-## Changes Made
-[Describe the changes you've made in detail]
+New feature
 
-### Added
-- [List new features/functionality added]
+Refactoring (no functional change)
 
-### Changed
-- [List modifications to existing functionality]
+Documentation
 
-### Removed
-- [List removed features/functionality]
+CI / tooling
 
-## Testing
-- [ ] Unit tests added/updated
-- [ ] Integration tests added/updated
-- [ ] E2E tests added/updated
-- [ ] All tests passing locally
-- [ ] Coverage requirements met (90%+)
+Changes
+<!-- Bullet list of what actually changed. Keep it short. -->
+-
 
-## Additional Information
-- [ ] mypy static type checking passes
-- [ ] ruff formatting and linting passes
-- [ ] Documentation has been updated
-- [ ] Component specification updated (if needed)
+Testing
+uv run pre-commit run --all-files passes locally
 
-## Screenshots (if applicable)
-[Add screenshots here if UI changes were made]
+Coverage stays at or above 70% (uv run coverage report --fail-under=70)
 
-## Related Issues
-- Closes #[issue number]
-- References #[issue number]
+Relevant unit/integration/e2e tests added or updated
 
-## Deployment Notes
-[Any special considerations for deploying this change]
+Related Issues
+<!-- Closes #123, References #456 — delete if none -->
 
-## Reviewer Checklist
-- [ ] Code follows project style guidelines
-- [ ] Code is well-documented
-- [ ] Changes are covered by tests
-- [ ] Type hints are properly used
-- [ ] Error handling is appropriate
-- [ ] Performance implications considered
-- [ ] Security implications considered
-
-## Self Review Checklist
-Before requesting review, I have:
-- [ ] Performed self-review of my code
-- [ ] Commented on hard-to-understand areas
-- [ ] Updated relevant documentation
-- [ ] Verified all tests pass
-- [ ] Verified code formatting and linting pass
-- [ ] Verified type checking passes
+Notes
+<!-- Anything a reviewer (or future you) should know: breaking changes, follow-ups, deployment considerations. Delete if nothing applies. -->
